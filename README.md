@@ -9,12 +9,13 @@ euro BCV y USDT de Binance P2P en una sola pantalla, sin cuentas y sin backend p
 
 ## Instalar
 
-APK listo para probar: [`dist/churupos-1.0.1.apk`](dist/churupos-1.0.1.apk)
+APK listo para probar: [Churupos 1.0.1](https://github.com/isDOSe/churupos/releases/download/v1.0.1/churupos-1.0.1.apk)
 
 ```powershell
-adb install -r dist/churupos-1.0.1.apk
+adb install -r churupos-1.0.1.apk
 ```
 
+Las versiones anteriores están en [Releases](https://github.com/isDOSe/churupos/releases).
 El APK está firmado con la clave de depuración: sirve para probar en un teléfono, no para
 publicar en Play Store.
 

@@ -22,6 +22,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 ### Cambios conocidos
 - Versión empaquetada como `churupos-1.0.1.apk`.
 - `minSdkAndroid` ajustado a 24 (Android 7.0+).
+- APK publicado como [release de GitHub v1.0.1](https://github.com/isDOSe/churupos/releases/tag/v1.0.1).
 
 ## [1.0.0+1] - 2026-10-23
 
@@ -38,7 +39,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 - Tema oscuro cyberpunk con tipografía Poppins incluida en assets.
 - Logo monograma "C" + rayo ámbar, generado por código en `scripts/generate_app_icon.py`.
 - 51 tests unitarios, de dominio y de widgets.
-- APK de prueba firmado con clave de depuración.
+- APK de prueba firmado con clave de depuración, publicado como [release de GitHub v1.0.0](https://github.com/isDOSe/churupos/releases/tag/v1.0.0).
 
 ### Técnicos
 - Estado con Riverpod (providers manuales, sin codegen).
