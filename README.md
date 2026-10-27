@@ -1,18 +1,19 @@
 # Churupos
 
 Calculadora de cambio de divisas para Venezuela. Convierte entre bolívares, dólar BCV,
-euro BCV y USDT de Binance P2P en una sola pantalla, sin cuentas y sin backend propio.
+euro BCV y USDT de Binance P2P en una sola pantalla, consulta el histórico de la tasa y no
+necesita cuentas ni backend propio.
 
-**Versión:** 1.0.1+2 · **Paquete:** `com.isdose.churupos` · **Android:** 7.0+ (minSdk 24)
+**Versión:** 1.0.2+3 · **Paquete:** `com.isdose.churupos` · **Android:** 7.0+ (minSdk 24)
 
 ![Pantalla principal](docs/home.png)
 
 ## Instalar
 
-APK listo para probar: [Churupos 1.0.1](https://github.com/isDOSe/churupos/releases/download/v1.0.1/churupos-1.0.1.apk)
+APK listo para probar: [Churupos 1.0.2](https://github.com/isDOSe/churupos/releases/download/v1.0.2/churupos-1.0.2.apk)
 
 ```powershell
-adb install -r churupos-1.0.1.apk
+adb install -r churupos-1.0.2.apk
 ```
 
 Las versiones anteriores están en [Releases](https://github.com/isDOSe/churupos/releases).
@@ -24,6 +25,7 @@ publicar en Play Store.
 - Convierte entre `VES`, `USD BCV`, `EUR BCV` y `USDT Binance`.
 - Elige origen y destino con dos selectores; el botón central los intercambia.
 - Escribe el monto y el resultado aparece al instante, con formato venezolano.
+- Historial de 7, 30 o 90 días con gráfico, variación, mínimo, máximo y promedio.
 - Comparte una captura del cálculo con el texto, la tasa y el enlace de descarga.
 - Botón **Actualizar** en el encabezado, refresco automático cada 5 minutos y al volver a la app.
 - Sin conexión usa la última tasa guardada y muestra la hora a la que corresponde.
@@ -50,9 +52,13 @@ Descarga la app: https://churupos.isdose.com
 
 - **Dólar y euro BCV:** `GET https://ve.dolarapi.com/v1/cotizaciones`, publicado por
   [dolarapi.com](https://ve.dolarapi.com) a partir del Banco Central de Venezuela.
+- **Histórico del BCV:** `GET https://ve.dolarapi.com/v1/historicos/dolares` y
+  `.../historicos/euros`. Se descarga la serie completa (desde 2023), se recorta a 120 días y
+  se guarda 6 h en el teléfono.
 - **USDT/Binance:** `POST https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search` con
   `tradeType: BUY` (anuncios que venden USDT). La app promedia los 10 primeros precios válidos.
-  Es un endpoint público no oficial y puede cambiar sin aviso.
+  Es un endpoint público no oficial y puede cambiar sin aviso. Binance no publica histórico
+  P2P, así que Churupos guarda un valor por día para construir el suyo.
 
 Churupos no fija, compra ni vende divisas. Los valores son referenciales.
 
@@ -61,7 +67,7 @@ Churupos no fija, compra ni vende divisas. Los valores son referenciales.
 ```powershell
 flutter pub get
 flutter run          # con un emulador o teléfono conectado
-flutter test         # 51 tests
+flutter test         # 68 tests
 flutter analyze      # sin issues
 flutter build apk --release
 ```
@@ -91,12 +97,17 @@ lib/
     data/               clientes de dolarapi y Binance, caché, repositorio
     presentation/       pantalla, hojas y widgets
     providers.dart      Riverpod + estado del par y del resultado
+  features/history/
+    domain/             puntos diarios, rangos y estadísticas
+    data/               histórico de dolarapi, caché BCV, snapshots USDT
+    presentation/       pantalla de historial y gráfico
+    history_providers.dart
 assets/
   branding/             logo de Churupos, iconos de launcher e isdose
   fonts/                Poppins 300–800
 scripts/
   generate_app_icon.py  dibuja la marca y regenera los PNG del icono
-test/                   dominio, formato, promedio, repositorio y widget
+test/                   dominio, formato, promedio, histórico, repositorio y widgets
 ```
 
 ### Decisiones
@@ -105,15 +116,17 @@ test/                   dominio, formato, promedio, repositorio y widget
 - **Dio** con timeout de 8/10 s y reintento único en errores de red.
 - **share_plus + path_provider** para capturar el panel y compartirlo como PNG con texto.
 - **SharedPreferences** para el último par, el monto y el snapshot de tasas.
+- **Historial** con el endpoint público de dolarapi (serie completa recortada a 120 días) y
+  snapshots diarios propios para USDT. El gráfico es un `CustomPainter`, sin librerías extra.
 - **Poppins** incluida en assets; no se descarga en tiempo de ejecución.
 - Todo el cálculo pasa por bolívares (`monto × VES_origen ÷ VES_destino`).
 - Caché por fuente: un fallo de Binance no oculta BCV.
 
 ### Pruebas
 
-51 tests cubren las 12 conversiones, ida y vuelta, formato `es-VE`, límites del campo,
-promedio de Binance, fusión de fuentes con caché, texto para compartir y los flujos
-principales de la pantalla.
+68 tests cubren las 12 conversiones, ida y vuelta, formato `es-VE`, límites del campo,
+promedio de Binance, fusión de fuentes con caché, texto para compartir, parseo y rangos del
+histórico, snapshots de USDT y los flujos principales de ambas pantallas.
 
 ## Estado
 
@@ -122,7 +135,7 @@ Listo para probar en Android. Pendiente para una publicación:
 - Firma de release propia y revisión de Play Store.
 - Sustituir el endpoint no oficial de Binance por un proveedor con contrato si se necesita
   estabilidad a largo plazo.
-- Historial, alertas o widgets, si algún día hacen falta.
+- Alertas o widgets, si algún día hacen falta.
 
 ## Autor
 

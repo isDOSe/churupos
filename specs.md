@@ -1,8 +1,8 @@
 # Churupos — Especificación de producto y técnica
 
-**Versión:** 1.0.0
-**Fecha:** 23 de octubre de 2026
-**Estado:** implementado y probado en Android (v1.0.0+1)
+**Versión:** 1.0.2
+**Fecha:** 27 de octubre de 2026
+**Estado:** implementado y probado en Android (v1.0.2+3)
 **Plataforma:** Android (Flutter)
 
 ---
@@ -23,7 +23,8 @@ abre la app hasta que lee el resultado.
 
 ### Principios
 
-1. **Una pantalla, una tarea.** No hay navegación principal, ni historial, ni dashboard.
+1. **Una tarea principal.** El conversor vive en una pantalla; el historial es una vista
+   secundaria que se abre desde allí y se cierra con un toque.
 2. **El resultado manda.** Es el elemento más grande, más contrastado y el único con brillo.
 3. **Transparencia.** Toda tasa se puede rastrear hasta su fuente y su hora de actualización.
 4. **La app no fija precios.** Solo comunica valores de referencia.
@@ -42,6 +43,7 @@ abre la app hasta que lee el resultado.
 - Campo de monto con teclado numérico y formato venezolano.
 - Resultado calculado en vivo mientras se escribe.
 - Tasa unitaria y hora de actualización visibles.
+- Historial de la tasa en 7, 30 o 90 días, con gráfico, variación, mínimo, máximo y promedio.
 - Actualización automática cada 5 minutos, manual, y al volver a la app.
 - Caché local de la última tasa válida por fuente.
 - Botón “Compartir cálculo”: captura el panel y comparte la imagen con el cálculo escrito.
@@ -52,7 +54,10 @@ abre la app hasta que lee el resultado.
 ### Fuera de alcance (v1)
 
 - iOS, web y escritorio.
-- Historial, gráficos o alertas de tasa.
+- Alertas de tasa.
+- Histórico anterior a 2023 para el BCV; el que publica dolarapi empieza el 3 de enero de 2023.
+- Histórico de USDT anterior a la instalación: Binance P2P no lo publica y la app solo
+  puede guardar lo que ve desde el primer día.
 - Cuentas, sincronización, backend o base de datos remota.
 - Comisiones, spreads configurables o casas de cambio.
 - Dólar paralelo, efectivo, Zelle, PayPal u otras referencias.
@@ -70,6 +75,8 @@ abre la app hasta que lee el resultado.
 | Plataforma | Solo Android, orientación vertical |
 | Estado | Riverpod (providers manuales, sin codegen) |
 | Fuente BCV | `https://ve.dolarapi.com/v1/cotizaciones` |
+| Fuente histórico BCV | `https://ve.dolarapi.com/v1/historicos/dolares` y `/euros` (serie completa, se recorta a 120 días) |
+| Histórico USDT | Snapshots diarios guardados por la app en `SharedPreferences` |
 | Fuente Binance | Endpoint público de Binance P2P, sin API key |
 | Precio Binance | Promedio de las 10 mejores ofertas de venta de USDT (lo que cuesta comprar USDT) |
 | Actualización | Al abrir, cada 5 min, manual y al volver del background |
@@ -92,7 +99,8 @@ abre la app hasta que lee el resultado.
 5. El resultado aparece debajo, actualizado en cada pulsación.
 6. Opcional: toca el botón de intercambio para invertir el par y recalcular.
 7. Opcional: toca “Compartir cálculo” para enviar una captura del panel con el texto.
-8. Opcional: toca “De dónde salen estos valores” para ver fuentes y descargo.
+8. Opcional: toca el icono de gráfico en el encabezado para ver el historial.
+9. Opcional: toca “De dónde salen estos valores” para ver fuentes y descargo.
 
 ### 4.2 Reglas de interacción
 
@@ -120,9 +128,28 @@ abre la app hasta que lee el resultado.
 | Fuente parcial | La moneda afectada muestra “sin actualizar” en su selector; el resto opera normal |
 | Error total sin caché | Resultado `—`, aviso bajo la tasa y botón “Reintentar”; “Actualizar” en el encabezado |
 | Actualizando con datos previos | Los valores actuales siguen visibles; no se bloquea la interfaz |
+| Historial cargando | Panel con spinner pequeño de 22 px; el resto de la vista ya es usable |
+| Historial servido desde caché | Se pinta la serie guardada y se avisa “Datos guardados en el teléfono” |
+| Historial sin red ni caché | “No pudimos cargar el histórico” con botón “Reintentar” |
+| USDT sin historial | Explica que Binance no publica histórico y que la app guarda un valor por día |
 
 Nunca se muestra un spinner de pantalla completa ni se borran los datos previos durante un
 refresco.
+
+### 4.4 Historial
+
+- Se abre con el icono de gráfico del encabezado y se cierra con la flecha, el gesto de atrás
+  o el botón del sistema.
+- La moneda inicial es la del selector “Desde”; si es bolívar, se abre en dólar.
+- Tres monedas (`USD`, `EUR`, `USDT`) y tres rangos (`7D`, `30D`, `90D`). Por defecto, 30 días.
+- El gráfico es interactivo: tocar o arrastrar mueve el cursor, y el número grande muestra el
+  cierre de ese día con la etiqueta `Hoy`, `Ayer` o la fecha.
+- La variación compara el último cierre del rango con el primero, en porcentaje y bolívares.
+- El resumen muestra mínimo, máximo y promedio del rango visible.
+- `USD` y `EUR` usan el histórico del BCV; `USDT` usa los valores que la app guarda una vez al
+  día, porque Binance P2P no publica histórico.
+- La serie del BCV se cachea 6 h. El botón de refresco de la vista fuerza la descarga.
+- Al pie se repite la fuente y el descargo de responsabilidad.
 
 ---
 
@@ -482,7 +509,49 @@ Promedio de referencia del 23/10/2026: **1000,616 VES/USDT** (10 anuncios, entre
 1003,998). La consulta con `tradeType: "SELL"` devuelve el otro lado del mercado (quien compra
 USDT), alrededor de 1000,85; no se usa.
 
-### 7.3 Restricciones de red
+### 7.3 Histórico — dolarapi.com
+
+```
+GET https://ve.dolarapi.com/v1/historicos/dolares
+GET https://ve.dolarapi.com/v1/historicos/euros
+```
+
+Respuesta (solo los campos usados):
+
+```json
+[
+  {
+    "fuente": "oficial",
+    "compra": null,
+    "venta": null,
+    "promedio": 887.302,
+    "fecha": "2026-10-27"
+  },
+  {
+    "fuente": "paralelo",
+    "compra": null,
+    "venta": null,
+    "promedio": 997.86774,
+    "fecha": "2026-10-27"
+  }
+]
+```
+
+Reglas:
+
+- Cada endpoint mezcla `oficial` y `paralelo`; la app usa solo `oficial` para coincidir con el
+  conversor.
+- Los datos empiezan el 3 de enero de 2023 y llegan hasta hoy, con una fila por fuente y día.
+- El endpoint **no acepta filtros por rango**: devuelve la serie completa (~144 KB USD, ~173 KB
+  EUR). Se descarga una vez y se recorta a los últimos 120 días antes de guardarla.
+- La serie se cachea 6 h en `SharedPreferences`; dentro de esa ventana no se vuelve a pedir.
+- Si hay varias filas del mismo día, gana la última.
+- También existe `.../historico/{YYYY/MM/DD}` para una fecha suelta, pero no se usa: 30
+  peticiones por pantalla serían peores que una sola descarga.
+- USDT no tiene histórico público en Binance P2P. La app guarda un valor por día (el promedio
+  de las 10 mejores ofertas del momento) y conserva 120 días.
+
+### 7.4 Restricciones de red
 
 - Android únicamente: no hay problema de CORS.
 - Timeout de conexión: 8 s. Timeout de respuesta: 10 s.
@@ -520,23 +589,29 @@ lib/
   main.dart
   app.dart
   core/
-    theme/
-      colors.dart
-      typography.dart
-      app_theme.dart
-      chamfer_clipper.dart
     format/
+      amount_input_formatter.dart
       money_format.dart
       relative_time.dart
+      short_date.dart
+    platform/
+      links.dart
+    theme/
+      app_theme.dart
+      chamfer.dart
+      colors.dart
   features/
     converter/
       domain/
         currency.dart
         rate_quote.dart
         conversion.dart
+        rate_error.dart
+        rates_state.dart
       data/
         dolar_api_client.dart
         binance_p2p_client.dart
+        network_error.dart
         rate_repository.dart
         rate_cache.dart
       providers.dart
@@ -545,24 +620,43 @@ lib/
         share_text.dart
         sources_sheet.dart
         widgets/
+          app_background.dart
+          author_credit.dart
           brand_header.dart
           currency_selector.dart
           swap_button.dart
           amount_field.dart
           result_readout.dart
           rate_caption.dart
-          status_tag.dart
           currency_sheet.dart
           share_button.dart
-  assets/
-    branding/churupos-mark.png
-    fonts/poppins-*.ttf
+          sheet_shell.dart
+    history/
+      domain/
+        rate_point.dart
+        rate_history.dart
+        history_range.dart
+      data/
+        dolar_history_client.dart
+        history_cache.dart
+        usdt_history_store.dart
+        history_repository.dart
+      history_providers.dart
+      presentation/
+        history_screen.dart
+        widgets/
+          rate_chart.dart
+assets/
+  branding/churupos-mark.png
+  fonts/poppins-*.ttf
 test/
   conversion_test.dart
   money_format_test.dart
   binance_average_test.dart
   rate_repository_test.dart
+  rate_history_test.dart
   converter_widget_test.dart
+  history_screen_test.dart
 ```
 
 ### 8.3 Piezas
@@ -598,6 +692,22 @@ Sin estado, sin Flutter, 100 % testeable.
 
 **`ConversionProvider`**
 - Derivado puro: combina `RatesState` + `PairState` y devuelve el resultado formateado.
+
+**`HistoryRepository`**
+- `loadCached()`: mezcla la serie del BCV guardada con los snapshots locales de USDT.
+- `refresh(previous, {force})`: si la caché tiene menos de 6 h, no toca la red; si falla,
+  devuelve la serie previa con `RateError`.
+- `recordUsdt(rate, at)`: guarda el valor del día (idempotente por fecha, conserva 120 días).
+- La app llama a `recordUsdt` en cada refresco de tasas exitoso y al abrir el historial.
+
+**`HistoryNotifier`** (AsyncNotifier `autoDispose`)
+- Se crea al abrir la vista, carga caché y refresca si toca.
+- `refresh({force})` para el botón de la vista.
+
+**`RateChart`**
+- `CustomPainter` sin dependencias: rejilla, área con degradado, línea con brillo, cursor
+  vertical y etiquetas de fecha.
+- El toque/arrastre se traduce a un índice y el padre muestra ese cierre.
 
 ### 8.4 Contrato de error
 
@@ -759,6 +869,14 @@ El descargo de la hoja de fuentes es el texto de la sección 5.5 y no se acorta.
   - Incluye monto, resultado, tasa, nota y enlace.
   - Marca las tasas guardadas.
   - Sin líneas vacías al final.
+- `rate_history_test.dart`
+  - El parser usa solo el BCV oficial, ordena, deduplica y descarta filas inválidas.
+  - Recorte a los días pedidos y rechazo de respuestas que no son lista.
+  - Rangos de 7, 30 y 90 días incluyendo hoy.
+  - Mínimo, máximo, promedio y variación; un solo punto no tiene variación.
+  - Snapshots de USDT: un valor por día, reemplazo del mismo día y descarte de datos viejos.
+  - Caché del BCV: ida y vuelta, corrupción ignorada.
+  - Repositorio: descarga la primera vez, usa caché 6 h y conserva la serie si falla la red.
 
 ### Widget
 
@@ -772,6 +890,9 @@ El descargo de la hoja de fuentes es el texto de la sección 5.5 y no se acorta.
 - El texto de compartir contiene el cálculo y el enlace de descarga.
 - Estado sin red con caché muestra el aviso ámbar y sigue calculando.
 - Estado sin red sin caché muestra el error y deshabilita el cálculo.
+- El historial muestra el gráfico de 30 días y el resumen, y cambia entre USD, EUR y USDT.
+- Con USDT sin datos aparece la explicación del historial local.
+- La vista de historial no se desborda en un teléfono de 320 px de ancho.
 
 ### Manual
 

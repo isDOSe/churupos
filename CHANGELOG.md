@@ -2,18 +2,31 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
-## [Pendiente / Unreleased]
-
-### Corregido
-- El texto para compartir ya no muestra `00:00` como hora de la tasa; ahora muestra la hora actual en que se comparte el cálculo, que es el momento más actualizado de la información.
+## [1.0.2+3] - 2026-10-27
 
 ### Agregado
+- Pantalla de historial de la tasa con rangos de 7, 30 y 90 días.
+  - Gráfico interactivo: tocar o arrastrar muestra el cierre de cada día.
+  - Variación del periodo en porcentaje y bolívares, más mínimo, máximo y promedio.
+  - Monedas `USD` y `EUR` con el histórico oficial del BCV vía
+    `https://ve.dolarapi.com/v1/historicos/dolares` y `/euros` (datos desde 2023).
+  - `USDT` con snapshots diarios guardados por la app: Binance P2P no publica histórico.
+  - Acceso desde el icono de gráfico del encabezado; caché de 6 h y refresco manual.
 - Nuevo script `scripts/generate_play_store_graphics.py` que genera los gráficos para Google Play Store:
   - `feature-graphic.png` (1024 x 500): banner principal destacando "Sin publicidad" y "Fácil de usar".
   - 4 screenshots de teléfono (1080 x 1920) con titular, mockup de teléfono y pie: conversión, sin publicidad, transparencia de fuentes y compartir.
 
+### Corregido
+- El texto para compartir ya no muestra `00:00` como hora de la tasa; ahora muestra la hora actual en que se comparte el cálculo, que es el momento más actualizado de la información.
+
 ### Cambiado
 - Logo e icono de la app: se mantuvo el monograma "C" original (sin flechas) tras probar la variante.
+- El historial de USDT se guarda una vez al día en cada refresco exitoso de tasas.
+
+### Técnicos
+- Serie histórica recortada a 120 días antes de cachearla; una sola descarga alimenta los tres rangos.
+- 68 tests: parser y rangos del histórico, snapshots de USDT, caché y pantalla de historial.
+- APK `churupos-1.0.2.apk` firmado con la clave de depuración.
 
 ## [1.0.1+2] - 2026-10-25
 

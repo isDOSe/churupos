@@ -8,10 +8,12 @@ class BrandHeader extends StatelessWidget {
     super.key,
     required this.refreshing,
     required this.onRefresh,
+    required this.onHistory,
   });
 
   final bool refreshing;
   final VoidCallback onRefresh;
+  final VoidCallback onHistory;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,8 @@ class BrandHeader extends StatelessWidget {
         const Expanded(
           child: Text(
             'Churupos',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 22,
@@ -40,8 +44,47 @@ class BrandHeader extends StatelessWidget {
             ),
           ),
         ),
+        _HistoryButton(onPressed: onHistory),
+        const SizedBox(width: 8),
         _RefreshButton(refreshing: refreshing, onPressed: onRefresh),
       ],
+    );
+  }
+}
+
+class _HistoryButton extends StatelessWidget {
+  const _HistoryButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Historial',
+      child: Semantics(
+        button: true,
+        label: 'Ver historial de la tasa',
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onPressed();
+          },
+          borderRadius: BorderRadius.circular(4),
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.line),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Icon(
+              Icons.show_chart_rounded,
+              size: 17,
+              color: AppColors.ultra,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

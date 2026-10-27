@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/format/amount_input_formatter.dart';
 import '../../core/format/money_format.dart';
+import '../history/data/usdt_history_store.dart';
 import 'data/binance_p2p_client.dart';
 import 'data/dolar_api_client.dart';
 import 'data/rate_cache.dart';
@@ -98,6 +99,15 @@ class RatesNotifier extends AsyncNotifier<RatesState> {
     try {
       final next = await repository.refresh(current);
       state = AsyncData(next);
+
+      final usdt = next.quotes[Currency.usdt];
+      if (usdt != null && !usdt.stale) {
+        unawaited(
+          UsdtHistoryStore(
+            ref.read(sharedPreferencesProvider),
+          ).record(usdt.vesPerUnit, usdt.updatedAt),
+        );
+      }
     } catch (_) {
       state = AsyncData(current.copyWith(refreshing: false));
     }

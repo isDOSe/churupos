@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/theme/chamfer.dart';
 import '../../../core/theme/colors.dart';
+import '../../history/presentation/history_screen.dart';
 import '../domain/currency.dart';
 import '../domain/rate_error.dart';
 import '../domain/rate_quote.dart';
@@ -127,6 +128,7 @@ class _ConverterScreenState extends ConsumerState<ConverterScreen>
                                 onRefresh: () => ref
                                     .read(ratesProvider.notifier)
                                     .refresh(manual: true),
+                                onHistory: _openHistory,
                               ),
                               const SizedBox(height: 28),
                               RepaintBoundary(
@@ -162,6 +164,32 @@ class _ConverterScreenState extends ConsumerState<ConverterScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _openHistory() {
+    Navigator.of(context).push(
+      PageRouteBuilder<void>(
+        transitionDuration: const Duration(milliseconds: 240),
+        reverseTransitionDuration: const Duration(milliseconds: 200),
+        pageBuilder: (_, _, _) => const HistoryScreen(),
+        transitionsBuilder: (_, animation, _, child) {
+          final curve = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          );
+          return FadeTransition(
+            opacity: curve,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.03),
+                end: Offset.zero,
+              ).animate(curve),
+              child: child,
+            ),
+          );
+        },
       ),
     );
   }
