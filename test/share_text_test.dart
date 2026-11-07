@@ -33,6 +33,13 @@ void main() {
     expect(text, contains('Descarga la app: https://churupos.isdose.com'));
   });
 
+  test('la hora del texto es la de actualización de la tasa', () {
+    final text = buildShareText(view(), now: DateTime(2026, 10, 23, 9, 41));
+
+    expect(text, contains('· 12:00 a. m.'));
+    expect(text, isNot(contains('09:41')));
+  });
+
   test('marca las tasas guardadas', () {
     final text = buildShareText(view(stale: true));
     expect(text, contains('tasa guardada'));

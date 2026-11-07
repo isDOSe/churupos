@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -91,6 +92,7 @@ void main() {
 
     expect(find.text('Bs. 26.586,81'), findsOneWidget);
     expect(find.text('Compartir cálculo'), findsOneWidget);
+    expect(find.text('Historial'), findsOneWidget);
   });
 
   testWidgets('el botón central intercambia y recalcula', (tester) async {
@@ -122,6 +124,25 @@ void main() {
     expect(find.text('1 EUR = Bs. 993,09'), findsOneWidget);
   });
 
+  testWidgets('el botón de reset vuelve a 1 dólar BCV', (tester) async {
+    await pumpApp(tester, state: fixture());
+
+    await tester.enterText(find.byType(TextField), '30');
+    await tester.tap(find.byIcon(Icons.swap_horiz_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('1 VES = \$ 0,0011'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.restart_alt_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dólar BCV'), findsOneWidget);
+    expect(find.text('Bolívar'), findsWidgets);
+    expect(find.text('1 USD = Bs. 886,23'), findsOneWidget);
+    expect(find.text('Bs. 886,23'), findsOneWidget);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, '1');
+  });
+
   testWidgets('la hoja de fuentes explica el origen y el descargo', (
     tester,
   ) async {
@@ -136,7 +157,7 @@ void main() {
     expect(find.text('ve.dolarapi.com'), findsOneWidget);
     expect(find.text('p2p.binance.com'), findsOneWidget);
     expect(find.textContaining('Churupos no fija'), findsOneWidget);
-    expect(find.text('Hecho por isdose.com'), findsWidgets);
+    expect(find.text('Hecho por DOSe'), findsWidgets);
   });
 
   testWidgets('con caché muestra sin conexión y sigue calculando', (
@@ -148,5 +169,64 @@ void main() {
     await tester.enterText(find.byType(TextField), '10');
     await tester.pumpAndSettle();
     expect(find.text('Bs. 8.862,27'), findsOneWidget);
+  });
+
+  testWidgets('tocar el resultado lo copia y avisa con un mensaje', (
+    tester,
+  ) async {
+    String? copiado;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copiado = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    await pumpApp(tester, state: fixture());
+
+    await tester.enterText(find.byType(TextField), '30');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Bs. 26.586,81'));
+    await tester.pumpAndSettle();
+
+    expect(copiado, 'Bs. 26.586,81');
+    expect(find.text('Copiado al portapapeles'), findsOneWidget);
+  });
+
+  testWidgets('sin monto el resultado no se puede copiar', (tester) async {
+    String? copiado;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copiado = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    await pumpApp(tester, state: fixture());
+
+    await tester.tap(find.text('Bs. 0,00'));
+    await tester.pumpAndSettle();
+
+    expect(copiado, isNull);
+    expect(find.text('Copiado al portapapeles'), findsNothing);
   });
 }

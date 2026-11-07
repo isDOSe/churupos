@@ -23,6 +23,7 @@ import 'widgets/author_credit.dart';
 import 'widgets/brand_header.dart';
 import 'widgets/currency_selector.dart';
 import 'widgets/currency_sheet.dart';
+import 'widgets/history_button.dart';
 import 'widgets/rate_caption.dart';
 import 'widgets/result_readout.dart';
 import 'widgets/share_button.dart';
@@ -128,7 +129,10 @@ class _ConverterScreenState extends ConsumerState<ConverterScreen>
                                 onRefresh: () => ref
                                     .read(ratesProvider.notifier)
                                     .refresh(manual: true),
-                                onHistory: _openHistory,
+                                onReset: () {
+                                  FocusScope.of(context).unfocus();
+                                  ref.read(pairProvider.notifier).reset();
+                                },
                               ),
                               const SizedBox(height: 28),
                               RepaintBoundary(
@@ -148,7 +152,9 @@ class _ConverterScreenState extends ConsumerState<ConverterScreen>
                                 busy: _sharing,
                                 onPressed: _shareCalculation,
                               ),
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 10),
+                              HistoryButton(onPressed: _openHistory),
+                              const SizedBox(height: 24),
                               const Spacer(),
                               _Footer(
                                 onSources: () => showSourcesSheet(context),

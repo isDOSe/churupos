@@ -13,7 +13,7 @@ class AuthorCredit extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       link: true,
-      label: 'Hecho por isdose.com',
+      label: 'Hecho por DOSe',
       child: InkWell(
         onTap: () => openExternalLink('https://isdose.com'),
         borderRadius: BorderRadius.circular(4),
@@ -34,7 +34,7 @@ class AuthorCredit extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Hecho por isdose.com',
+                'Hecho por DOSe',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: fontSize,

@@ -1,13 +1,12 @@
 import '../../../core/format/money_format.dart';
+import '../../../core/format/clock_time.dart';
 import '../providers.dart';
 
 /// Texto que acompaña a la captura del cálculo.
-String buildShareText(ConversionView view) {
+String buildShareText(ConversionView view, {DateTime? now}) {
   final amount = '${MoneyFormat.number(view.amount)} ${view.from.code}';
-  final sharedAt = DateTime.now();
-  final hh = sharedAt.hour.toString().padLeft(2, '0');
-  final mm = sharedAt.minute.toString().padLeft(2, '0');
-  final age = ' · hoy $hh:$mm';
+  final at = view.effectiveAt;
+  final age = at == null ? '' : ' · ${clockTime(at, now: now)}';
   final cached = view.stale ? ' · tasa guardada' : '';
 
   return [

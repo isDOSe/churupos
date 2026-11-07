@@ -38,6 +38,20 @@ class HistoryRepository {
   Future<void> recordUsdt(double vesPerUnit, DateTime at) =>
       _usdt.record(vesPerUnit, at);
 
+  /// Valor de una fecha concreta. El BCV se consulta en dolarapi; USDT solo
+  /// puede salir de los snapshots que guardó la app.
+  Future<RatePoint?> fetchForDate(Currency currency, DateTime date) async {
+    final day = DateTime(date.year, date.month, date.day);
+    if (currency == Currency.usdt) {
+      for (final point in _usdt.read()) {
+        if (point.isSameDay(day)) return point;
+      }
+      return null;
+    }
+    if (currency == Currency.ves) return null;
+    return _client.fetchForDate(currency, day);
+  }
+
   Future<HistorySnapshot> loadCached() async {
     final cached = _cache.read();
     final usdt = _usdt.read();

@@ -13,17 +13,29 @@ import 'package:churupos/features/history/domain/rate_history.dart';
 import 'package:churupos/features/history/domain/rate_point.dart';
 
 class _FakeClient extends DolarHistoryClient {
-  _FakeClient({this.result, this.error}) : super(Dio());
+  _FakeClient({
+    this.result,
+    this.error,
+    this.datePoint,
+  }) : super(Dio());
 
   final Map<Currency, List<RatePoint>>? result;
   final RateError? error;
+  final RatePoint? datePoint;
   int calls = 0;
+  DateTime? lastDateRequested;
 
   @override
   Future<Map<Currency, List<RatePoint>>> fetch({DateTime? now}) async {
     calls++;
     if (error != null) throw RateFailure(error!);
     return result ?? <Currency, List<RatePoint>>{};
+  }
+
+  @override
+  Future<RatePoint?> fetchForDate(Currency currency, DateTime date) async {
+    lastDateRequested = date;
+    return datePoint;
   }
 }
 
@@ -76,6 +88,53 @@ void main() {
     test('una respuesta que no es lista falla', () {
       expect(
         () => parseHistory({'detalle': 'error'}),
+        throwsA(
+          isA<RateFailure>().having(
+            (failure) => failure.kind,
+            'kind',
+            RateError.badResponse,
+          ),
+        ),
+      );
+    });
+  });
+
+  group('parseDayRate', () {
+    test('elige el BCV oficial e ignora el paralelo', () {
+      final point = parseDayRate([
+        {'fuente': 'paralelo', 'fecha': '2026-10-23', 'promedio': 999.0},
+        {'fuente': 'oficial', 'fecha': '2026-10-23', 'promedio': 886.2},
+      ]);
+
+      expect(point, isNotNull);
+      expect(point!.date, DateTime(2026, 10, 23));
+      expect(point.vesPerUnit, 886.2);
+    });
+
+    test('sin fila oficial o sin datos devuelve null', () {
+      expect(
+        parseDayRate([
+          {'fuente': 'paralelo', 'fecha': '2026-10-24', 'promedio': 1005.0},
+        ]),
+        isNull,
+      );
+      expect(parseDayRate(const []), isNull);
+    });
+
+    test('usa la fecha pedida si la respuesta no la incluye', () {
+      final requested = DateTime(2025, 1, 2);
+      final point = parseDayRate({
+        'fuente': 'oficial',
+        'promedio': 52.0,
+      }, requested: requested);
+
+      expect(point, isNotNull);
+      expect(point!.date, requested);
+    });
+
+    test('una respuesta que no es lista ni objeto falla', () {
+      expect(
+        () => parseDayRate('no-es-json'),
         throwsA(
           isA<RateFailure>().having(
             (failure) => failure.kind,
@@ -256,6 +315,36 @@ void main() {
 
       final snapshot = await repository.loadCached();
       expect(snapshot.series[Currency.usdt]!.single.vesPerUnit, 1005);
+    });
+
+    test('consulta una fecha del BCV y el snapshot local de USDT', () async {
+      final point = RatePoint(date: DateTime(2025, 1, 2), vesPerUnit: 52.0);
+      final client = _FakeClient(datePoint: point);
+      final repository = HistoryRepository(
+        client,
+        HistoryCache(prefs),
+        UsdtHistoryStore(prefs),
+      );
+
+      final bcv = await repository.fetchForDate(
+        Currency.usd,
+        DateTime(2025, 1, 2, 18),
+      );
+      expect(bcv, isNotNull);
+      expect(bcv!.date, DateTime(2025, 1, 2));
+      expect(client.lastDateRequested, DateTime(2025, 1, 2));
+
+      await repository.recordUsdt(1005, DateTime(2026, 10, 26, 10));
+      final usdt = await repository.fetchForDate(
+        Currency.usdt,
+        DateTime(2026, 10, 26, 22),
+      );
+      expect(usdt, isNotNull);
+      expect(usdt!.vesPerUnit, 1005);
+      expect(
+        await repository.fetchForDate(Currency.usdt, DateTime(2026, 10, 25)),
+        isNull,
+      );
     });
   });
 }

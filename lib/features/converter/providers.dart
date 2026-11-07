@@ -103,9 +103,8 @@ class RatesNotifier extends AsyncNotifier<RatesState> {
       final usdt = next.quotes[Currency.usdt];
       if (usdt != null && !usdt.stale) {
         unawaited(
-          UsdtHistoryStore(
-            ref.read(sharedPreferencesProvider),
-          ).record(usdt.vesPerUnit, usdt.updatedAt),
+          UsdtHistoryStore(ref.read(sharedPreferencesProvider))
+              .record(usdt.vesPerUnit, usdt.updatedAt),
         );
       }
     } catch (_) {
@@ -204,6 +203,12 @@ class PairNotifier extends Notifier<PairState> {
     _persist();
   }
 
+  /// Vuelve al cálculo por defecto: 1 dólar BCV a bolívares.
+  void reset() {
+    state = const PairState(from: Currency.usd, to: Currency.ves, amount: '1');
+    _persist();
+  }
+
   void _persist() {
     final prefs = ref.read(sharedPreferencesProvider);
     unawaited(
@@ -237,6 +242,10 @@ class ConversionView {
   final double amount;
   final double? result;
   final double? unitRate;
+
+  /// Momento en que la app recibió las tasas que alimentan el cálculo. Se
+  /// muestra igual en pantalla y al compartir, para no confundirlo con la
+  /// fecha de publicación de la fuente (el BCV publica con hora 00:00).
   final DateTime? effectiveAt;
   final bool available;
   final bool stale;
@@ -268,13 +277,16 @@ final conversionProvider = Provider<ConversionView>((ref) {
     unitRate = crossRate(fromQuote, toQuote);
     stale = fromQuote.stale || toQuote.stale || (rates?.fromCache ?? false);
 
-    final times = <DateTime>[
-      if (!pair.from.isBase) fromQuote.updatedAt,
-      if (!pair.to.isBase) toQuote.updatedAt,
-    ];
-    effectiveAt = times.isEmpty
-        ? rates?.fetchedAt
-        : times.reduce((a, b) => a.isBefore(b) ? a : b);
+    effectiveAt = rates?.fetchedAt;
+    if (effectiveAt == null) {
+      final times = <DateTime>[
+        if (!pair.from.isBase) fromQuote.updatedAt,
+        if (!pair.to.isBase) toQuote.updatedAt,
+      ];
+      effectiveAt = times.isEmpty
+          ? null
+          : times.reduce((a, b) => a.isBefore(b) ? a : b);
+    }
   }
 
   return ConversionView(

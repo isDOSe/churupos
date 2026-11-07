@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/format/relative_time.dart';
+import '../../../../core/format/clock_time.dart';
 import '../../../../core/theme/colors.dart';
 import '../../providers.dart';
 
@@ -54,7 +54,7 @@ class RateCaption extends StatelessWidget {
             if (view.effectiveAt != null) ...[
               const SizedBox(width: 8),
               Text(
-                relativeTime(view.effectiveAt!),
+                clockTime(view.effectiveAt!),
                 style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 11.5,

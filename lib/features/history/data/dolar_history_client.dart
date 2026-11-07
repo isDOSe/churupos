@@ -12,10 +12,9 @@ import '../domain/rate_point.dart';
 class DolarHistoryClient {
   DolarHistoryClient(this._dio);
 
-  static const String dollarsEndpoint =
-      'https://ve.dolarapi.com/v1/historicos/dolares';
-  static const String eurosEndpoint =
-      'https://ve.dolarapi.com/v1/historicos/euros';
+  static const String baseUrl = 'https://ve.dolarapi.com/v1';
+  static const String dollarsEndpoint = '$baseUrl/historicos/dolares';
+  static const String eurosEndpoint = '$baseUrl/historicos/euros';
   static const int keepDays = 120;
 
   final Dio _dio;
@@ -40,6 +39,60 @@ class DolarHistoryClient {
       throw RateFailure(mapDioError(error), error.message);
     }
   }
+
+  /// Consulta puntual de una fecha. dolarapi responde con un arreglo de
+  /// cotizaciones (oficial y paralelo) o 404 si ese día no tiene datos.
+  Future<RatePoint?> fetchForDate(Currency currency, DateTime date) async {
+    final endpoint = switch (currency) {
+      Currency.usd => dollarsEndpoint,
+      Currency.eur => eurosEndpoint,
+      Currency.ves || Currency.usdt => null,
+    };
+    if (endpoint == null) return null;
+
+    try {
+      final response = await _dio.get<dynamic>(
+        '$endpoint/${_datePath(date)}',
+      );
+      return parseDayRate(response.data, requested: date);
+    } on DioException catch (error) {
+      final status = error.response?.statusCode;
+      if (status == 400 || status == 404) return null;
+      throw RateFailure(mapDioError(error), error.message);
+    }
+  }
+
+  static String _datePath(DateTime date) {
+    String two(int value) => value.toString().padLeft(2, '0');
+    return '${date.year}/${two(date.month)}/${two(date.day)}';
+  }
+}
+
+/// Convierte la respuesta puntual de dolarapi en un único punto oficial.
+///
+/// El endpoint por fecha devuelve también la cotización paralela y, en fines
+/// de semana, puede devolver solo esa. En ese caso no hay tasa oficial que
+/// mostrar y se devuelve `null`.
+RatePoint? parseDayRate(Object? data, {DateTime? requested}) {
+  final items = switch (data) {
+    List() => data,
+    Map() => [data],
+    _ => throw const RateFailure(RateError.badResponse),
+  };
+
+  RatePoint? official;
+  for (final item in items) {
+    if (item is! Map) continue;
+    if (item['fuente']?.toString() != 'oficial') continue;
+
+    final date = parseDay(item['fecha']?.toString() ?? '') ?? requested;
+    final price = (item['promedio'] as num?)?.toDouble();
+    if (date == null || price == null || !price.isFinite || price <= 0) {
+      continue;
+    }
+    official = RatePoint(date: date, vesPerUnit: price);
+  }
+  return official;
 }
 
 /// Convierte la respuesta de dolarapi en puntos diarios del BCV oficial.

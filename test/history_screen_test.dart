@@ -35,6 +35,10 @@ class _FakeHistoryRepository extends HistoryRepository {
 
   @override
   Future<void> recordUsdt(double vesPerUnit, DateTime at) async {}
+
+  @override
+  Future<RatePoint?> fetchForDate(Currency currency, DateTime date) async =>
+      RatePoint(date: date, vesPerUnit: 777.7);
 }
 
 List<RatePoint> series(DateTime end, int days, double start, double step) => [
@@ -123,6 +127,53 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('7D'), findsOneWidget);
+    expect(find.text('Mínimo'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('consulta una fecha puntual y la X vuelve al histórico', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final snapshot = HistorySnapshot(
+      series: {Currency.usd: series(today, 40, 850, 0.9)},
+      fetchedAt: today,
+    );
+
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          historyRepositoryProvider.overrideWithValue(
+            _FakeHistoryRepository(prefs, snapshot),
+          ),
+        ],
+        child: const MaterialApp(home: HistoryScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Fecha'));
+    await tester.pumpAndSettle();
+    expect(find.text('Elige una fecha'), findsOneWidget);
+
+    await tester.tap(find.text('Consultar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('777,70'), findsOneWidget);
+    expect(find.text('Quitar fecha'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fecha'), findsOneWidget);
     expect(find.text('Mínimo'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

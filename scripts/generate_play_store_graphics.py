@@ -186,7 +186,7 @@ def app_main() -> Image.Image:
     # Pie
     text_at(draw, (SCREEN_W / 2, 1738), "De dónde salen estos valores",
             font("Poppins-Medium.ttf", 27), MUTED, anchor="mm")
-    text_at(draw, (SCREEN_W / 2, 1792), "Hecho por isdose.com",
+    text_at(draw, (SCREEN_W / 2, 1792), "Hecho por DOSe",
             font("Poppins-Regular.ttf", 23), (120, 114, 142), anchor="mm")
     return canvas
 
@@ -217,7 +217,7 @@ def app_noads() -> Image.Image:
 
     text_at(draw, (SCREEN_W / 2, 1738), "De dónde salen estos valores",
             font("Poppins-Medium.ttf", 27), MUTED, anchor="mm")
-    text_at(draw, (SCREEN_W / 2, 1792), "Hecho por isdose.com",
+    text_at(draw, (SCREEN_W / 2, 1792), "Hecho por DOSe",
             font("Poppins-Regular.ttf", 23), (120, 114, 142), anchor="mm")
     return canvas
 
@@ -301,7 +301,7 @@ def app_share() -> Image.Image:
 
     text_at(draw, (SCREEN_W / 2, 1738), "De dónde salen estos valores",
             font("Poppins-Medium.ttf", 27), MUTED, anchor="mm")
-    text_at(draw, (SCREEN_W / 2, 1792), "Hecho por isdose.com",
+    text_at(draw, (SCREEN_W / 2, 1792), "Hecho por DOSe",
             font("Poppins-Regular.ttf", 23), (120, 114, 142), anchor="mm")
     return canvas
 
@@ -437,7 +437,7 @@ def main() -> None:
 
     shots = [
         ("screenshot-1-main.png", "Sin cuentas · Sin registro",
-         ["Cambia divisas", "en segundos"], "USD, EUR y USDT en una sola pantalla.", app_main()),
+         ["Calcula divisas", "en segundos"], "USD, EUR y USDT en una sola pantalla.", app_main()),
         ("screenshot-2-noads.png", "Cero anuncios",
          ["Sin publicidad.", "Sin distracciones."], "Solo abres, calculas y listo.", app_noads()),
         ("screenshot-3-sources.png", "Transparencia total",

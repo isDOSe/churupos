@@ -1,13 +1,15 @@
 name: churupos
 description: "Calculadora de cambio de divisas para Venezuela."
 publish_to: "none"
-version: 1.0.2+3
+version: 1.0.7+8
 
 environment:
   sdk: ^3.13.5
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.4.3
   dio: ^5.11.1

@@ -8,12 +8,12 @@ class BrandHeader extends StatelessWidget {
     super.key,
     required this.refreshing,
     required this.onRefresh,
-    required this.onHistory,
+    required this.onReset,
   });
 
   final bool refreshing;
   final VoidCallback onRefresh;
-  final VoidCallback onHistory;
+  final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class BrandHeader extends StatelessWidget {
             ),
           ),
         ),
-        _HistoryButton(onPressed: onHistory),
+        _ResetButton(onPressed: onReset),
         const SizedBox(width: 8),
         _RefreshButton(refreshing: refreshing, onPressed: onRefresh),
       ],
@@ -52,18 +52,18 @@ class BrandHeader extends StatelessWidget {
   }
 }
 
-class _HistoryButton extends StatelessWidget {
-  const _HistoryButton({required this.onPressed});
+class _ResetButton extends StatelessWidget {
+  const _ResetButton({required this.onPressed});
 
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: 'Historial',
+      message: 'Reiniciar cálculo',
       child: Semantics(
         button: true,
-        label: 'Ver historial de la tasa',
+        label: 'Reiniciar cálculo',
         child: InkWell(
           onTap: () {
             HapticFeedback.selectionClick();
@@ -74,12 +74,13 @@ class _HistoryButton extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
+              color: AppColors.ultra.withValues(alpha: 0.06),
               border: Border.all(color: AppColors.line),
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Icon(
-              Icons.show_chart_rounded,
-              size: 17,
+              Icons.restart_alt_rounded,
+              size: 15,
               color: AppColors.ultra,
             ),
           ),
