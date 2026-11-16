@@ -23,7 +23,8 @@ import sys
 from PIL import Image, ImageDraw, ImageFilter
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT_DIR = os.path.join(BASE, "assets", "branding")
+APP_DIR = os.path.join(BASE, "app")
+OUT_DIR = os.path.join(APP_DIR, "assets", "branding")
 PREVIEW_DIR = os.path.join(BASE, ".preview")
 
 OUT = 1024          # tamaño final de cada PNG

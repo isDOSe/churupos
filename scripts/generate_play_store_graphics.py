@@ -19,9 +19,10 @@ import os
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT_DIR = os.path.join(BASE, "assets", "play-store")
-FONTS_DIR = os.path.join(BASE, "assets", "fonts")
-MARK_PATH = os.path.join(BASE, "assets", "branding", "churupos-mark.png")
+APP_DIR = os.path.join(BASE, "app")
+OUT_DIR = os.path.join(APP_DIR, "assets", "play-store")
+FONTS_DIR = os.path.join(APP_DIR, "assets", "fonts")
+MARK_PATH = os.path.join(APP_DIR, "assets", "branding", "churupos-mark.png")
 
 # Paleta de la app
 VOID = (7, 6, 11)

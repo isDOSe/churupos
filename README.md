@@ -42,7 +42,10 @@ Churupos no fija, compra ni vende divisas. Los valores son referenciales.
 
 ## Desarrollo
 
+La app vive en `app/`. Los comandos se corren desde ahí:
+
 ```powershell
+cd app
 flutter pub get
 flutter run          # con un emulador o teléfono conectado
 flutter test
@@ -52,18 +55,28 @@ flutter build apk --release
 
 Requisitos: Flutter 3.47+, Android SDK 36, Java 17+.
 
-La web vive en `landing/` y es HTML/CSS estático, sin build. El hero abre
+## Estructura
+
+```
+app/       proyecto Flutter completo
+web/       landing estática (HTML/CSS, sin build)
+docs/      capturas y documentación de tienda
+scripts/   generadores de iconos y gráficos
+dist/      APK de prueba
+```
+
+La web vive en `web/` y es HTML/CSS estático, sin build. El hero abre
 **“Probar versión web”**, un modal con un conversor limitado a **USD y EUR BCV**. No incluye
 USDT, historial, compartir ni modo offline: para eso está la app. Llama a dolarapi directo y
 cachea las tasas en `localStorage`, así que no necesita backend ni proxy.
 
 ```powershell
-python -m http.server 4173 --directory landing
+python -m http.server 4173 --directory web
 # http://127.0.0.1:4173/
 ```
 
 La landing se publica dentro de isdose.com, en
-<https://isdose.com/lab/churupos/>. `landing/` es la fuente de verdad: el sitio
+<https://isdose.com/lab/churupos/>. `web/` es la fuente de verdad: el sitio
 la copia con `npm run labs:sync` (ver `docs/labs.md` en el repo de isdose). No
 se despliega por separado.
 
