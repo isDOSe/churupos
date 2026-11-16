@@ -14,6 +14,6 @@ String buildShareText(ConversionView view, {DateTime? now}) {
     '${view.formattedRate}$age$cached',
     '',
     'Calculado con Churupos, la calculadora de cambio para Venezuela.',
-    'Descarga la app: https://churupos.isdose.com',
+    'Descarga la app: https://isdose.com/lab/churupos/',
   ].join('\n');
 }

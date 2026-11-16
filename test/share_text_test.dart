@@ -30,7 +30,7 @@ void main() {
     expect(text, contains('30,00 USD = Bs. 26.586,81'));
     expect(text, contains('1 USD = Bs. 886,23'));
     expect(text, contains('Calculado con Churupos'));
-    expect(text, contains('Descarga la app: https://churupos.isdose.com'));
+    expect(text, contains('Descarga la app: https://isdose.com/lab/churupos/'));
   });
 
   test('la hora del texto es la de actualización de la tasa', () {
@@ -47,6 +47,6 @@ void main() {
 
   test('no deja líneas vacías al final', () {
     final text = buildShareText(view());
-    expect(text.endsWith('https://churupos.isdose.com'), isTrue);
+    expect(text.endsWith('https://isdose.com/lab/churupos/'), isTrue);
   });
 }

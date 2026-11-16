@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://churupos.isdose.com/sitemap.xml
+Sitemap: https://isdose.com/lab/churupos/sitemap.xml

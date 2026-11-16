@@ -7,7 +7,7 @@ USDT de Binance P2P en una sola pantalla. Sin cuentas, sin backend propio y sin 
 |---|---|
 | ![Pantalla principal](docs/home.png) | ![Historial](docs/historial.png) |
 
-**Versión:** 1.0.8+9 · **Paquete:** `com.isdose.churupos` · **Android:** 7.0+
+**Versión:** 1.0.9+10 · **Paquete:** `com.isdose.churupos` · **Android:** 7.0+
 **Web:** [isdose.com/lab/churupos](https://isdose.com/lab/churupos/)
 
 ## Qué hace

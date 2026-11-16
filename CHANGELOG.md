@@ -2,6 +2,17 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [1.0.9+10] - 2026-11-16
+
+### Cambiado
+- Los enlaces públicos apuntan a `isdose.com/lab/churupos`, la dirección nueva. El
+  subdominio anterior sigue existiendo pero sirve una versión vieja de la landing.
+- El texto que acompaña a la captura invita a descargar desde la dirección nueva.
+
+### Técnicos
+- `canonical`, `og:url`, `og:image`, `robots.txt` y `sitemap.xml` de la landing
+  actualizados para no indexar la versión vieja.
+
 ## [1.0.8+9] - 2026-11-13
 
 ### Corregido
