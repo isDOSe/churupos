@@ -25,11 +25,18 @@ class AmountInputFormatter extends TextInputFormatter {
       );
     }
 
-    cleaned = cleaned.replaceAll('.', ',');
-    final parts = cleaned.split(',');
-
-    var integer = parts.first;
-    var decimals = parts.length > 1 ? parts.sublist(1).join() : '';
+    // Separa la parte entera de la decimal sin confundir el punto de miles con
+    // la coma decimal. La coma siempre es decimal; un punto es decimal solo si
+    // el usuario acaba de escribirlo (menos de tres dígitos a su derecha). Los
+    // puntos de miles siempre quedan seguidos de tres o más dígitos, así que
+    // no se reinterpretan al escribir el siguiente número.
+    final decimalAt = _decimalIndex(cleaned);
+    var integer = decimalAt == null
+        ? cleaned.replaceAll('.', '')
+        : cleaned.substring(0, decimalAt).replaceAll('.', '');
+    var decimals = decimalAt == null
+        ? ''
+        : cleaned.substring(decimalAt + 1).replaceAll(RegExp(r'[^0-9]'), '');
 
     integer = integer.replaceFirst(RegExp(r'^0+(?=\d)'), '');
     if (integer.length > maxIntegerDigits) {
@@ -45,13 +52,26 @@ class AmountInputFormatter extends TextInputFormatter {
     );
 
     var text = grouped;
-    if (parts.length > 1) text = '$grouped,$decimals';
+    if (decimalAt != null) text = '$grouped,$decimals';
     if (text.isEmpty) text = '0';
 
     return TextEditingValue(
       text: text,
       selection: TextSelection.collapsed(offset: text.length),
     );
+  }
+
+  /// Índice del separador decimal dentro de [text], o `null` si no hay parte
+  /// decimal. Una coma siempre es decimal; un punto es decimal solo si no es un
+  /// separador de miles (es decir, si quedan menos de tres dígitos a su derecha).
+  static int? _decimalIndex(String text) {
+    final comma = text.indexOf(',');
+    if (comma != -1) return comma;
+
+    final dot = text.lastIndexOf('.');
+    if (dot != -1 && text.length - dot - 1 < 3) return dot;
+
+    return null;
   }
 }
 

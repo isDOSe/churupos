@@ -7,8 +7,8 @@ USDT de Binance P2P en una sola pantalla. Sin cuentas, sin backend propio y sin 
 |---|---|
 | ![Pantalla principal](docs/home.png) | ![Historial](docs/historial.png) |
 
-**Versión:** 1.0.7+8 · **Paquete:** `com.isdose.churupos` · **Android:** 7.0+
-**Web:** [churupos.isdose.com](https://churupos.isdose.com)
+**Versión:** 1.0.8+9 · **Paquete:** `com.isdose.churupos` · **Android:** 7.0+
+**Web:** [isdose.com/lab/churupos](https://isdose.com/lab/churupos/)
 
 ## Qué hace
 
@@ -62,7 +62,10 @@ python -m http.server 4173 --directory landing
 # http://127.0.0.1:4173/
 ```
 
-El despliegue de la landing es manual: se sube el contenido de `landing/` al hosting.
+La landing se publica dentro de isdose.com, en
+<https://isdose.com/lab/churupos/>. `landing/` es la fuente de verdad: el sitio
+la copia con `npm run labs:sync` (ver `docs/labs.md` en el repo de isdose). No
+se despliega por separado.
 
 ## Stack
 

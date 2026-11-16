@@ -2,6 +2,19 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [1.0.8+9] - 2026-11-13
+
+### Corregido
+- El campo de monto ya no corrompe los números al escribir montos grandes. Antes, al teclear
+  `13674` el punto de miles se confundía con la coma decimal y el valor quedaba en `1,36`;
+  ahora se distingue el separador de miles del decimal y el monto se escribe completo (`13.674`).
+
+### Técnicos
+- `AmountInputFormatter` separa la parte entera de la decimal sin reinterpretar los puntos de
+  miles en la siguiente pulsación.
+- Tests del formateador tecleando dígito a dígito un monto grande y un decimal con punto
+  (86 tests en total).
+
 ## [1.0.7+8] - 2026-11-07
 
 ### Agregado

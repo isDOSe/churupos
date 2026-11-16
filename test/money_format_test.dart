@@ -66,6 +66,28 @@ void main() {
       expect(apply('1234567890123').text, '123.456.789.012');
     });
 
+    test('escribir un monto grande dígito a dígito no corrompe los miles', () {
+      var value = TextEditingValue.empty;
+      for (final digit in '13674'.split('')) {
+        value = formatter.formatEditUpdate(
+          value,
+          TextEditingValue(text: '${value.text}$digit'),
+        );
+      }
+      expect(value.text, '13.674');
+    });
+
+    test('un decimal con punto después de los miles se respeta', () {
+      var value = TextEditingValue.empty;
+      for (final char in '1234.5'.split('')) {
+        value = formatter.formatEditUpdate(
+          value,
+          TextEditingValue(text: '${value.text}$char'),
+        );
+      }
+      expect(value.text, '1.234,5');
+    });
+
     test('vacío se mantiene vacío', () {
       expect(apply('').text, '');
     });
